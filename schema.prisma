@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")        // koneksi POOLED dari Neon (untuk runtime aplikasi)
+  directUrl = env("DIRECT_DATABASE_URL") // koneksi DIRECT dari Neon (untuk db push & restore data)
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  name         String
+  email        String?
+  passwordHash String?
+  role         String    @default("USER") // USER | ADMIN
+  provider     String    @default("CREDENTIALS") // CREDENTIALS | GOOGLE
+  faceHash     String? // signature biometrik wajah (hash) — BUKAN foto
+  avatarUrl    String?
+  bio          String?
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+  sessions     Session[]
+  posts        Post[]
+  likes        Like[]
+  comments     Comment[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  imageUrl  String
+  caption   String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  likes     Like[]
+  comments  Comment[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  action      String
+  actionLabel String
+  detail      String?
+  path        String?
+  userId      String?
+  actorName   String?
+  createdAt   DateTime @default(now())
+}
+
+model AboutPhoto {
+  id        String   @id @default(cuid())
+  slot      Int      @unique // 1 | 2 | 3
+  dataUrl   String
+  updatedAt DateTime @updatedAt
+}
+
+/** Penyimpanan gambar portabel (BLOB/bytea di database) — foto karya, avatar, dll.
+ *  imageUrl di Post dsb. menunjuk /api/assets/<id> sehingga gambar selalu
+ *  tersaji di hosting mana pun tanpa perlu folder public/ yang bisa ditulis. */
+model Asset {
+  id        String   @id @default(cuid())
+  mime      String // contoh: image/jpeg, image/png, image/gif
+  data      Bytes
+  createdAt DateTime @default(now())
+}
