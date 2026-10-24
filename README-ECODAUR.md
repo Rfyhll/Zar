@@ -144,4 +144,3 @@ ecodaur/
 - Suara sapaan memakai Web Speech API bawaan browser (Chrome/Edge paling bagus); bila browser
   memblokir autoplay, cukup ketuk layar sekali untuk mendengar sapaan.
 - Gerbang admin: kode `RAHIL-ECO-777` → lalu login `admin / admin123`.
-
