@@ -24,12 +24,25 @@ const VIEW_PATH: Record<ViewName, string> = {
   admin: '/admin',
 }
 
+/** layar menunggu sesi dicek — mencegah halaman login berkedip saat refresh */
+function AuthLoading() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-emerald-50/40">
+      <div className="flex flex-col items-center gap-4">
+        <span className="size-12 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        <p className="text-sm font-bold text-emerald-800">Memuat sesi kamu…</p>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const setUser = useApp((s) => s.setUser)
   const setAuthReady = useApp((s) => s.setAuthReady)
   const setView = useApp((s) => s.setView)
   const view = useApp((s) => s.view)
   const user = useApp((s) => s.user)
+  const authReady = useApp((s) => s.authReady)
 
   const [showSplash, setShowSplash] = useState<boolean | null>(null)
   const lastView = useRef<ViewName | null>(null)
@@ -40,10 +53,11 @@ export default function Home() {
     return () => clearTimeout(t)
   }, [])
 
-  /* pulihkan posisi halaman terakhir saat refresh (SPA view tersimpan per sesi tab) */
+  /* pulihkan posisi halaman terakhir saat refresh — pakai localStorage agar
+     bertahan walau tab/browser ditutup lalu dibuka lagi (bukan cuma per sesi tab) */
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem('ecodaur-view') as ViewName | null
+      const saved = localStorage.getItem('ecodaur-view') as ViewName | null
       if (saved && ['beranda', 'komunitas', 'pasar', 'profil', 'tentang', 'admin'].includes(saved)) {
         setView(saved)
         lastView.current = saved
@@ -54,7 +68,7 @@ export default function Home() {
   /* simpan posisi halaman setiap kali berpindah */
   useEffect(() => {
     try {
-      sessionStorage.setItem('ecodaur-view', view)
+      localStorage.setItem('ecodaur-view', view)
     } catch {}
   }, [view])
 
@@ -85,6 +99,7 @@ export default function Home() {
   }, [view, user, setView])
 
   const showMain = Boolean(user)
+  const showAuth = showSplash === false && authReady && !showMain
 
   return (
     <div className="min-h-screen bg-emerald-50/40">
@@ -103,9 +118,12 @@ export default function Home() {
             {view === 'admin' && user?.role !== 'ADMIN' && <BerandaView />}
           </main>
         </>
+      ) : showAuth ? (
+        <AuthView />
       ) : (
-        showSplash === false && <AuthView />
-      )}
+        showSplash === false && <AuthLoading />
+      )
+      }
 
       <FaceScanDialog />
       <GoogleDialog />
