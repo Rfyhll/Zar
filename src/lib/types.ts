@@ -36,6 +36,35 @@ export interface FeedPost {
   comments: FeedComment[]
 }
 
+/* ===== PASAR ECODAUR (jual beli barang olahan sampah) ===== */
+
+export interface ProductCommentItem {
+  id: string
+  text: string
+  rating: number
+  createdAt: string
+  user: FeedUser
+}
+
+export interface MarketProduct {
+  id: string
+  title: string
+  description: string
+  category: string
+  price: number
+  oldPrice: number | null
+  stock: number
+  sold: number
+  rating: number
+  location: string
+  imageUrl: string
+  createdAt: string
+  seller: FeedUser
+  likeCount: number
+  likedByMe: boolean
+  comments: ProductCommentItem[]
+}
+
 export interface Tutorial {
   slug: string
   title: string

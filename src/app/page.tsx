@@ -6,6 +6,7 @@ import Splash from '@/components/ecodaur/splash'
 import AuthView from '@/components/ecodaur/auth-view'
 import BerandaView from '@/components/ecodaur/beranda-view'
 import KomunitasView from '@/components/ecodaur/komunitas-view'
+import PasarView from '@/components/ecodaur/pasar-view'
 import ProfilView from '@/components/ecodaur/profil-view'
 import TentangView from '@/components/ecodaur/tentang-view'
 import AdminView from '@/components/ecodaur/admin-view'
@@ -17,6 +18,7 @@ import { useApp, type ViewName } from '@/lib/store'
 const VIEW_PATH: Record<ViewName, string> = {
   beranda: '/beranda',
   komunitas: '/komunitas',
+  pasar: '/pasar',
   profil: '/profil',
   tentang: '/tentang',
   admin: '/admin',
@@ -42,7 +44,7 @@ export default function Home() {
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem('ecodaur-view') as ViewName | null
-      if (saved && ['beranda', 'komunitas', 'profil', 'tentang', 'admin'].includes(saved)) {
+      if (saved && ['beranda', 'komunitas', 'pasar', 'profil', 'tentang', 'admin'].includes(saved)) {
         setView(saved)
         lastView.current = saved
       }
@@ -94,6 +96,7 @@ export default function Home() {
           <main>
             {view === 'beranda' && <BerandaView />}
             {view === 'komunitas' && <KomunitasView />}
+            {view === 'pasar' && <PasarView />}
             {view === 'profil' && <ProfilView />}
             {view === 'tentang' && <TentangView />}
             {view === 'admin' && user?.role === 'ADMIN' && <AdminView />}

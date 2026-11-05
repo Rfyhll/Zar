@@ -1,11 +1,12 @@
 'use client'
 
 import { useApp, type ViewName } from '@/lib/store'
-import { Home, Sparkles, User, Info, Settings2, Recycle } from 'lucide-react'
+import { Home, Sparkles, User, Info, Settings2, Recycle, ShoppingBag } from 'lucide-react'
 
 const MENU: { key: ViewName; label: string; icon: typeof Home }[] = [
   { key: 'beranda', label: 'Beranda', icon: Home },
   { key: 'komunitas', label: 'Komunitas', icon: Sparkles },
+  { key: 'pasar', label: 'Pasar', icon: ShoppingBag },
   { key: 'profil', label: 'Profil', icon: User },
   { key: 'tentang', label: 'Tentang', icon: Info },
 ]

@@ -25,6 +25,11 @@ const TABLES = [
   ['like', ['createdAt'], []],
   ['comment', ['createdAt'], []],
   ['activity', ['createdAt'], []],
+  // PASAR ECODAUR — urutan mengikuti relasi FK
+  ['product', ['createdAt'], []],
+  ['productLike', ['createdAt'], []],
+  ['productComment', ['createdAt'], []],
+  ['order', ['createdAt'], []],
 ]
 
 function convertRow(row, dateFields, byteFields) {

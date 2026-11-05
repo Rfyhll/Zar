@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import type { SessionUser } from './types'
 
-export type ViewName = 'beranda' | 'komunitas' | 'profil' | 'tentang' | 'admin'
+export type ViewName = 'beranda' | 'komunitas' | 'pasar' | 'profil' | 'tentang' | 'admin'
 export type FaceScanMode = 'login' | 'enroll' | 'capture'
 
 interface AppState {

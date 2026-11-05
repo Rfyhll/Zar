@@ -9,22 +9,26 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  name         String
-  email        String?
-  passwordHash String?
-  role         String    @default("USER") // USER | ADMIN
-  provider     String    @default("CREDENTIALS") // CREDENTIALS | GOOGLE
-  faceHash     String? // signature biometrik wajah (hash) — BUKAN foto
-  avatarUrl    String?
-  bio          String?
-  createdAt    DateTime  @default(now())
-  lastSeenAt   DateTime  @default(now())
-  sessions     Session[]
-  posts        Post[]
-  likes        Like[]
-  comments     Comment[]
+  id              String    @id @default(cuid())
+  username        String    @unique
+  name            String
+  email           String?
+  passwordHash    String?
+  role            String    @default("USER") // USER | ADMIN
+  provider        String    @default("CREDENTIALS") // CREDENTIALS | GOOGLE
+  faceHash        String? // signature biometrik wajah (hash) — BUKAN foto
+  avatarUrl       String?
+  bio             String?
+  createdAt       DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  sessions        Session[]
+  posts           Post[]
+  likes           Like[]
+  comments        Comment[]
+  products        Product[]
+  productLikes    ProductLike[]
+  productComments ProductComment[]
+  orders          Order[]
 }
 
 model Session {
@@ -94,4 +98,62 @@ model Asset {
   mime      String // contoh: image/jpeg, image/png, image/gif
   data      Bytes
   createdAt DateTime @default(now())
+}
+
+/** PASAR ECODAUR — jual beli barang olahan sampah (konsep seperti Shopee). */
+model Product {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  category    String // Dekorasi | Fashion | Aksesoris | Taman & Organik | Mainan
+  price       Int // harga dalam Rupiah
+  oldPrice    Int? // harga sebelum diskon (untuk label promo, boleh kosong)
+  stock       Int              @default(1)
+  sold        Int              @default(0)
+  rating      Float            @default(5) // rata-rata rating 1-5
+  location    String           @default("Banda Aceh")
+  imageUrl    String // /api/assets/<id> — foto produk tersimpan di database
+  sellerId    String
+  seller      User             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  likes       ProductLike[]
+  comments    ProductComment[]
+  orders      Order[]
+}
+
+model ProductLike {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([productId, userId])
+}
+
+model ProductComment {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  rating    Int      @default(5) // 1-5 bintang dari pembeli
+  createdAt DateTime @default(now())
+}
+
+/** Pesanan simulasi — pencatatan pembelian (pembayaran disimulasikan). */
+model Order {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerId    String
+  buyer      User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  qty        Int      @default(1)
+  totalPrice Int
+  address    String?
+  payment    String   @default("COD") // COD | TRANSFER | ECOPOINT
+  status     String   @default("DIPROSES") // DIPROSES | DIKIRIM | SELESAI
+  createdAt  DateTime @default(now())
 }
