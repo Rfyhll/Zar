@@ -241,6 +241,17 @@
   transform-origin: center;
   animation: radar-pulse 2.2s ease-in-out infinite;
 }
+@keyframes murthehelp-title-reveal {
+  0% { opacity: 0; transform: scale(.4); }
+  35% { opacity: 1; transform: scale(1.2); }
+  58% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); }
+}
+.murthehelp-title {
+  animation: murthehelp-title-reveal 2.5s cubic-bezier(.2,.75,.25,1) both;
+  text-shadow: 0 0 32px rgba(185,219,102,.18);
+}
 @media (prefers-reduced-motion: reduce) {
   .radar-pulse { animation: none; }
+  .murthehelp-title { animation: none; opacity: 1; }
 }
