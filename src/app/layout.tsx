@@ -20,35 +20,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EcoDaur — Karya Rahil Azwar",
+  title: "Murthehelp — Fictional Prop Exchange",
   description:
-    "Website EcoDaur karya Rahil Azwar: komunitas daur ulang kreatif Indonesia — tutorial video, pameran karya, dan jejaring sosial karya daur ulang. Kelola sampah dari rumah dengan EcoDaur.",
-  applicationName: "EcoDaur",
-  authors: [{ name: "Rahil Azwar" }],
-  keywords: [
-    "EcoDaur",
-    "Rahil Azwar",
-    "daur ulang",
-    "sampah",
-    "kerajinan bekas",
-    "komunitas",
-    "eco-brick",
-    "recycle",
-  ],
-  creator: "Rahil Azwar",
+    "A cinematic, fictional prop catalogue inspired by secret-network thrillers. Browse inert display props in a safe, non-transactional interface.",
+  applicationName: "Murthehelp",
+  keywords: ["Murthehelp", "fictional props", "cinematic interface", "display props", "simulation"],
   openGraph: {
-    title: "EcoDaur — Karya Rahil Azwar",
-    description:
-      "Website EcoDaur karya Rahil Azwar: ubah sampah jadi karya — tutorial video asli, pameran komunitas, dan feed karya bergaya media sosial.",
-    siteName: "EcoDaur — Karya Rahil Azwar",
+    title: "Murthehelp — Fictional Prop Exchange",
+    description: "A fictional prop catalogue and secure-network interface for stories and tabletop worlds.",
+    siteName: "Murthehelp",
     type: "website",
-    locale: "id_ID",
   },
   twitter: {
     card: "summary",
-    title: "EcoDaur — Karya Rahil Azwar",
-    description:
-      "Website EcoDaur karya Rahil Azwar: ubah sampah jadi karya — tutorial video asli, pameran komunitas, dan feed karya bergaya media sosial.",
+    title: "Murthehelp — Fictional Prop Exchange",
+    description: "A fictional prop catalogue for stories and tabletop worlds.",
   },
 };
 
