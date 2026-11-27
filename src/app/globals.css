@@ -59,37 +59,37 @@
 :root {
   color-scheme: dark;
   --radius: 0.25rem;
-  --background: #0a0a0a;
-  --foreground: #e5e5e5;
-  --card: #111111;
-  --card-foreground: #e5e5e5;
-  --popover: #111111;
-  --popover-foreground: #e5e5e5;
-  --primary: #22c55e;
-  --primary-foreground: #07110a;
-  --secondary: #171717;
-  --secondary-foreground: #e5e5e5;
-  --muted: #171717;
-  --muted-foreground: #a3a3a3;
-  --accent: #171717;
-  --accent-foreground: #22c55e;
-  --destructive: #ef4444;
-  --border: #262626;
-  --input: #262626;
-  --ring: #22c55e;
-  --chart-1: #22c55e;
-  --chart-2: #ef4444;
-  --chart-3: #a855f7;
-  --chart-4: #eab308;
-  --chart-5: #737373;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #e5e5e5;
-  --sidebar-primary: #22c55e;
-  --sidebar-primary-foreground: #07110a;
-  --sidebar-accent: #171717;
-  --sidebar-accent-foreground: #e5e5e5;
-  --sidebar-border: #262626;
-  --sidebar-ring: #22c55e;
+  --background: #0b0c0a;
+  --foreground: #e9ebdf;
+  --card: #11120f;
+  --card-foreground: #e9ebdf;
+  --popover: #11120f;
+  --popover-foreground: #e9ebdf;
+  --primary: #b9db66;
+  --primary-foreground: #10130a;
+  --secondary: #1a1c17;
+  --secondary-foreground: #e9ebdf;
+  --muted: #1a1c17;
+  --muted-foreground: #929588;
+  --accent: #1a1c17;
+  --accent-foreground: #b9db66;
+  --destructive: #e87567;
+  --border: #30332b;
+  --input: #30332b;
+  --ring: #b9db66;
+  --chart-1: #b9db66;
+  --chart-2: #e87567;
+  --chart-3: #bd9aff;
+  --chart-4: #e6bb69;
+  --chart-5: #829078;
+  --sidebar: #0b0c0a;
+  --sidebar-foreground: #e9ebdf;
+  --sidebar-primary: #b9db66;
+  --sidebar-primary-foreground: #10130a;
+  --sidebar-accent: #1a1c17;
+  --sidebar-accent-foreground: #b9db66;
+  --sidebar-border: #30332b;
+  --sidebar-ring: #b9db66;
 }
 
 @layer base {
@@ -230,4 +230,17 @@
   transform: translateY(-6px);
   box-shadow: 0 22px 46px -18px rgba(77, 124, 15, 0.35);
   border-color: #84cc16;
+}
+
+@keyframes radar-pulse {
+  0%, 100% { opacity: .22; transform: scale(.75); }
+  50% { opacity: .85; transform: scale(1.35); }
+}
+.radar-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: radar-pulse 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar-pulse { animation: none; }
 }
