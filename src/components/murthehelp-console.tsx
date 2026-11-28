@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { Activity, ArrowDownRight, ArrowUpRight, Box, Check, ChevronDown, CircleHelp, Fingerprint, LockKeyhole, MapPin, Minus, PackageCheck, Plus, Radio, Search, Shield, ShoppingCart, Signal, Smartphone, Terminal, Trash2, Truck, X, Zap } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Activity, ArrowDownRight, ArrowUpRight, Box, Check, ChevronDown, CircleHelp, Fingerprint, LockKeyhole, MapPin, Minus, PackageCheck, Plus, Radio, Search, Shield, ShoppingCart, Signal, Terminal, Trash2, Truck, X, Zap } from 'lucide-react'
 import AdminCommandCenter from '@/components/admin-command-center'
+import HologramWarning from '@/components/hologram-warning'
 
 type Tone = 'green' | 'red' | 'purple' | 'yellow' | 'blue'
 type Product = { id: string; name: string; code: string; category: string; description: string; price: number; stock: number; tone: Tone; icon: typeof Radio; spec: string; image: string }
@@ -69,30 +70,9 @@ const tones: Record<Tone, { text: string; bg: string; border: string; dot: strin
   blue: { text: 'text-[#86bfff]', bg: 'bg-[#86bfff]/10', border: 'border-[#86bfff]/25', dot: 'bg-[#86bfff]' },
 }
 
-async function tryMobileLandscape() {
-  if (!window.matchMedia('(max-width: 767px)').matches) return
-
-  try {
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen()
-    }
-  } catch {
-    // Some mobile browsers do not allow fullscreen from embedded previews.
-  }
-
-  try {
-    const orientation = screen.orientation as ScreenOrientation & { lock?: (value: 'landscape') => Promise<void> }
-    if (!orientation.lock) return
-    await orientation.lock('landscape')
-  } catch {
-    // The on-screen prompt provides manual rotation when orientation lock is unavailable.
-  }
-}
-
 export default function MurthehelpConsole() {
-  const [phase, setPhase] = useState<'intro' | 'video' | 'title' | 'market' | 'admin'>('intro')
+  const [phase, setPhase] = useState<'intro' | 'weapon' | 'dread' | 'title' | 'market' | 'admin'>('intro')
   const [videoError, setVideoError] = useState(false)
-  const [fading, setFading] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [access, setAccess] = useState(accessOptions[0])
   const [category, setCategory] = useState('ALL CODES')
@@ -117,28 +97,46 @@ export default function MurthehelpConsole() {
 
   const finishIntro = () => {
     videoRef.current?.pause()
-    setFading(false)
     setPhase('title')
-    window.setTimeout(() => setPhase('market'), 2500)
+  }
+
+  const advanceIntroClip = () => {
+    if (phase === 'weapon') {
+      setVideoError(false)
+      setPhase('dread')
+    } else if (phase === 'dread') {
+      finishIntro()
+    }
   }
 
   const initialize = () => {
     setVideoError(false)
-    void tryMobileLandscape()
-    if (!videoRef.current) { setVideoError(true); setPhase('video'); return }
-    setPhase('video')
-    void videoRef.current.play().catch(() => setVideoError(true))
+    setPhase('weapon')
   }
 
-  if (phase === 'intro' || phase === 'video' || phase === 'title') return <main className="fixed inset-0 z-50 overflow-hidden bg-black text-white">
-    <video ref={videoRef} src="/dread-intro.mp4" playsInline preload="auto" onEnded={finishIntro} onError={() => setVideoError(true)} className={`absolute inset-0 size-full object-cover transition-opacity duration-700 ${phase === 'video' && !videoError ? 'opacity-100' : 'opacity-0'}`} aria-label="Video pembuka fiksi Murthehelp" />
-    {phase === 'title' && <div className="murthehelp-title-screen absolute inset-0 grid place-items-center" aria-label="MURTHEHELP title transition"><h1 className="murthehelp-title font-mono text-[clamp(2.6rem,11vw,8rem)] font-black tracking-[.12em]">MURTHEHELP</h1></div>}
-    {phase === 'intro' && <div className="absolute inset-0 grid place-items-center px-6"><div className="w-full max-w-2xl text-center"><p className="mb-6 font-mono text-[10px] tracking-[.38em] text-primary">MURTHEHELP / VISUAL FICTION PROTOCOL</p><button onClick={initialize} className="border border-primary/60 bg-primary/5 px-6 py-5 font-mono text-xs tracking-[.14em] text-primary transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-10">INITIALIZE SYSTEM</button><p className="mt-5 text-[10px] text-zinc-600">Karya prototipe fiksi · seluruh transaksi dan profil bersifat simulasi</p></div></div>}
-    {phase === 'video' && <><button onClick={finishIntro} className="absolute bottom-4 right-4 border border-white/40 bg-black/60 px-4 py-2 font-mono text-[10px] tracking-wider text-white hover:border-primary hover:text-primary">SKIP</button>{videoError && <div className="absolute inset-0 grid place-items-center bg-black/90 px-6 text-center"><div><p className="font-mono text-xs text-primary">INTRO MEDIA NOT FOUND</p><p className="mt-3 text-sm text-zinc-400">Video pembuka <code className="text-zinc-200">/dread-intro.mp4</code> belum tersedia.</p><button onClick={finishIntro} className="mt-6 border border-primary/50 px-5 py-3 font-mono text-[10px] tracking-wider text-primary">ENTER SIMULATION</button></div></div>}</>}
-    <div className={`pointer-events-none absolute inset-0 bg-black transition-opacity duration-700 ${fading ? 'opacity-100' : 'opacity-0'}`} />
+  useEffect(() => {
+    if (phase !== 'weapon' && phase !== 'dread') return
+    const video = videoRef.current
+    if (!video) return
+    video.currentTime = 0
+    video.muted = phase === 'dread'
+    void video.play().catch(() => setVideoError(true))
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'title') return
+    const timer = window.setTimeout(() => setPhase('market'), 6000)
+    return () => window.clearTimeout(timer)
+  }, [phase])
+
+  if (phase === 'intro' || phase === 'weapon' || phase === 'dread' || phase === 'title') return <main className="fixed inset-0 z-50 overflow-hidden bg-black text-white">
+    {(phase === 'weapon' || phase === 'dread') && <video key={phase} ref={videoRef} src={phase === 'weapon' ? '/intro.mp4' : '/dread-intro.mp4'} muted={phase === 'dread'} playsInline preload="auto" onTimeUpdate={(event) => { if (phase === 'dread' && event.currentTarget.currentTime >= 3) advanceIntroClip() }} onEnded={advanceIntroClip} onError={() => setVideoError(true)} className={`absolute inset-0 size-full object-cover transition-opacity duration-700 ${videoError ? 'opacity-0' : 'opacity-100'}`} aria-label={phase === 'weapon' ? 'Original fictional weapon-themed opening video' : 'Three-second silent Murthehelp title clip'} />}
+    {phase === 'title' && <div className="murthehelp-title-screen absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-6" aria-label="MURTHEHELP title transition"><img src="/skull-hologram.png" alt="Glowing holographic skull" className="hologram-skull-title size-20 object-contain sm:size-24"/><h1 className="murthehelp-title text-center font-mono text-[clamp(2.25rem,10vw,6.5rem)] font-black tracking-[.12em]">MURTHEHELP</h1><p className="font-mono text-[9px] tracking-[.22em] text-primary">SOUNDTRACK / YOUTUBE SHORT</p><div className="w-full max-w-[320px] overflow-hidden border border-primary/30 bg-black"><iframe title="Murthehelp soundtrack from YouTube" src="https://www.youtube-nocookie.com/embed/etjzXoMGXAw?autoplay=1&controls=1&loop=1&playlist=etjzXoMGXAw&playsinline=1&rel=0" className="aspect-video w-full" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/></div><a href="https://www.youtube.com/shorts/etjzXoMGXAw?si=_JRJ2_9MOa13sEWS" target="_blank" rel="noreferrer" className="font-mono text-[8px] tracking-wider text-muted-foreground underline underline-offset-4">OPEN ORIGINAL YOUTUBE SOURCE</a><button onClick={() => setPhase('market')} className="mt-1 border border-primary/50 px-5 py-2.5 font-mono text-[10px] tracking-[.16em] text-primary transition hover:bg-primary/10">ENTER MURTHEHELP</button></div>}
+    {phase === 'intro' && <div className="absolute inset-0 grid place-items-center px-6"><div className="w-full max-w-2xl text-center"><p className="mb-6 font-mono text-[10px] tracking-[.38em] text-primary">MURTHEHELP / VISUAL FICTION PROTOCOL</p><button onClick={initialize} className="border border-primary/60 bg-primary/5 px-6 py-5 font-mono text-xs tracking-[.14em] text-primary transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-10">INITIALIZE SYSTEM</button><p className="mt-5 text-[10px] text-zinc-600">Fictional prototype · all profiles and activity are simulated</p></div></div>}
+    {(phase === 'weapon' || phase === 'dread') && <><button onClick={finishIntro} className="absolute bottom-4 right-4 border border-white/40 bg-black/60 px-4 py-2 font-mono text-[10px] tracking-wider text-white hover:border-primary hover:text-primary">SKIP INTRO</button>{videoError && <div className="absolute inset-0 grid place-items-center bg-black/90 px-6 text-center"><div><p className="font-mono text-xs text-primary">INTRO MEDIA NOT FOUND</p><p className="mt-3 text-sm text-zinc-400">The opening video <code className="text-zinc-200">{phase === 'weapon' ? '/intro.mp4' : '/dread-intro.mp4'}</code> could not play.</p><button onClick={advanceIntroClip} className="mt-6 border border-primary/50 px-5 py-3 font-mono text-[10px] tracking-wider text-primary">CONTINUE</button></div></div>}</>}
   </main>
 
-  if (phase === 'admin') return <><AdminCommandCenter onBack={() => setPhase('market')} /><MobileLandscapePrompt /></>
+  if (phase === 'admin') return <AdminCommandCenter onBack={() => setPhase('market')} />
 
   return <main className="min-h-screen bg-background text-foreground">
     <header className="sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-xl"><div className="mx-auto flex min-h-[66px] max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-7"><button onClick={() => setPhase('market')} className="flex items-center gap-3" aria-label="Murthehelp home"><span className="grid size-9 place-items-center border border-primary/30 bg-primary/10 text-primary"><Terminal size={18}/></span><span className="text-left"><span className="block font-mono text-[12px] tracking-[.22em] text-white">MURTHEHELP</span><span className="mt-0.5 block font-mono text-[8px] tracking-[.17em] text-muted-foreground">FICTIONAL PROP EXCHANGE</span></span></button><nav className="flex flex-wrap items-center gap-2"><button onClick={() => setPhase('market')} className="border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-[9px] tracking-wider text-primary">MARKETPLACE</button><button onClick={() => setPhase('admin')} className="border border-border px-3 py-2 font-mono text-[9px] tracking-wider text-muted-foreground transition hover:text-foreground">COMMAND CENTER</button><button onClick={() => setManualOpen(true)} className="inline-flex items-center gap-2 border border-border px-3 py-2 font-mono text-[9px] tracking-wider text-muted-foreground transition hover:text-foreground"><CircleHelp size={13}/> PANDUAN / CARA KERJA</button></nav><div className="flex items-center gap-2"><button onClick={() => setCartOpen(true)} className="relative inline-flex h-9 items-center gap-2 border border-border px-3 text-xs text-foreground transition hover:border-muted-foreground" aria-label={`Buka keranjang simulasi, ${count} item`}><ShoppingCart size={15}/><span className="font-mono text-[9px] tracking-wider">CART</span>{count > 0 && <span className="grid size-4 place-items-center bg-primary font-mono text-[9px] text-black">{count}</span>}</button><label className="sr-only" htmlFor="access-profile">Profil tampilan</label><select id="access-profile" aria-label="Pilih profil warna fiksi" value={access.name} onChange={(event) => setAccess(accessOptions.find((item) => item.name === event.target.value) ?? accessOptions[0])} className="h-9 max-w-28 border border-border bg-card px-2 font-mono text-[9px] text-muted-foreground"><option value="ADMIN / VIP">GREEN</option><option value="FIELD CREW">RED</option><option value="INTEL / SPY">PURPLE</option><option value="CLEANER">YELLOW</option><option value="LOGISTICS">BLUE</option></select></div></div></header>
@@ -146,6 +144,8 @@ export default function MurthehelpConsole() {
     <div className="border-b border-border/60 bg-card/50"><div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2.5 font-mono text-[9px] tracking-[.12em] sm:px-7"><div className="flex flex-wrap items-center gap-x-5 gap-y-1.5"><span className="flex items-center gap-2 text-primary"><span className="size-1.5 animate-pulse rounded-full bg-primary"/>DEMO NODE / OFFLINE</span><span className="text-muted-foreground">SYNTHETIC PROFILES <span className="text-foreground">05</span></span><span className="text-muted-foreground">SCENE <span className="text-foreground">STUDIO / 07</span></span></div><span className="text-muted-foreground">SESSION <span className="text-foreground">PORTFOLIO-DEMO</span></span></div></div>
 
     <div className="mx-auto max-w-[1440px] px-4 pb-16 sm:px-7"><section className="relative mt-5 overflow-hidden border border-border bg-card px-6 py-8 sm:mt-7 sm:px-10 sm:py-10"><div className="pointer-events-none absolute inset-0 bg-[linear-gradient(105deg,transparent_10%,rgba(185,219,102,.045)_48%,transparent_78%)]"/><div className="pointer-events-none absolute -right-10 -top-20 size-72 rounded-full border border-border/70"/><div className="pointer-events-none absolute -right-2 -top-12 size-56 rounded-full border border-border/60"/><div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="flex items-center gap-2 font-mono text-[9px] tracking-[.25em] text-primary"><span className="size-1.5 bg-primary"/>INDEPENDENT FICTIONAL PROP EXCHANGE</div><h1 className="mt-5 max-w-2xl text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[.98] tracking-[-.06em] text-white">A world built<br className="hidden sm:block"/> for <span className="font-mono font-normal text-primary">fiction.</span></h1><p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">Explore the visual language of a covert-network thriller through inert set pieces, cinematic props, and a dashboard powered entirely by invented data.</p></div><div className="grid grid-cols-2 gap-px border border-border bg-border lg:min-w-[310px]"><div className="bg-card p-4"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">DISPLAY PROPS</p><p className="mt-2 font-mono text-2xl text-foreground">{products.length}<span className="ml-2 text-xs text-muted-foreground">items</span></p></div><div className="bg-card p-4"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">MODE</p><p className="mt-2 flex items-center gap-2 font-mono text-sm text-primary"><span className="size-1.5 rounded-full bg-primary"/>SIMULATED</p></div><div className="col-span-2 flex items-center justify-between bg-card px-4 py-3"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">CLEARANCE PROFILE</p><span className={`border px-2 py-1 font-mono text-[8px] tracking-wider ${tones[access.tone].text} ${tones[access.tone].bg} ${tones[access.tone].border}`}>{access.code} / DEMO ONLY</span></div></div></div></section>
+
+      <HologramWarning />
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" id="catalog"><div><p className="font-mono text-[9px] tracking-[.22em] text-muted-foreground">01 / PROP INVENTORY</p><h2 className="mt-2 text-xl font-medium tracking-tight text-foreground">Available set pieces <span className="font-mono text-sm text-muted-foreground">({visibleProducts.length.toString().padStart(2, '0')})</span></h2></div><label className="flex h-10 items-center gap-2 border border-border bg-card px-3 sm:w-64"><Search size={14} className="text-muted-foreground"/><span className="sr-only">Cari properti</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari properti..." className="w-full bg-transparent font-mono text-[10px] text-foreground outline-none placeholder:text-muted-foreground"/></label></div>
       <div className="mt-4 flex flex-wrap gap-2 pb-2" aria-label="Filter kode warna properti">{filters.map((filter) => <button key={filter.label} onClick={() => setCategory(filter.label)} aria-pressed={category === filter.label} className={`shrink-0 border px-3 py-2 font-mono text-[9px] tracking-[.12em] transition ${category === filter.label ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-muted-foreground hover:text-foreground'}`}>{filter.label}</button>)}</div>
@@ -159,37 +159,5 @@ export default function MurthehelpConsole() {
     {cartOpen && <div className="fixed inset-0 z-50 flex justify-end bg-black/75" onMouseDown={(event) => { if (event.target === event.currentTarget) setCartOpen(false) }}><section role="dialog" aria-modal="true" aria-labelledby="cart-title" className="flex h-full w-full max-w-md flex-col border-l border-border bg-card shadow-2xl"><div className="flex items-center justify-between border-b border-border p-5"><div><p className="font-mono text-[9px] tracking-[.2em] text-muted-foreground">LOCAL DEMO SESSION</p><h2 id="cart-title" className="mt-1 text-lg text-foreground">Prop cart <span className="font-mono text-sm text-muted-foreground">({count})</span></h2></div><button onClick={() => setCartOpen(false)} aria-label="Tutup keranjang" className="grid size-9 place-items-center border border-border text-muted-foreground hover:text-foreground"><X size={16}/></button></div>{receipt ? <div className="flex flex-1 flex-col items-center justify-center px-7 text-center"><span className="grid size-12 place-items-center border border-primary/30 bg-primary/10 text-primary"><Check size={22}/></span><h3 className="mt-5 text-lg text-foreground">Simulation complete</h3><p className="mt-2 text-xs leading-5 text-muted-foreground">Struk demo #MH-{Math.floor(1000 + Math.random() * 8999)} · {count} properti · {total.toFixed(3)} PROP CR</p><p className="mt-2 text-xs leading-5 text-muted-foreground">Tidak ada pesanan dibuat, pembayaran diproses, atau pengiriman diatur. Ini hanya contoh interaksi UI.</p><button onClick={() => { setReceipt(false); setCart({}); setCartOpen(false) }} className="mt-6 border border-border px-4 py-2 font-mono text-[9px] tracking-wider text-foreground hover:border-primary">TUTUP STRUK</button></div> : <>{count ? <><div className="flex-1 overflow-y-auto p-5">{products.filter((item) => cart[item.id]).map((item) => <div key={item.id} className="flex gap-3 border-b border-border py-4 first:pt-0"><div className="grid size-12 shrink-0 place-items-center border border-border bg-background text-muted-foreground"><item.icon size={18}/></div><div className="min-w-0 flex-1"><p className="font-mono text-[9px] text-muted-foreground">{item.code}</p><p className="mt-1 text-xs text-foreground">{item.name}</p><p className="mt-1 font-mono text-[10px] text-primary">{item.price.toFixed(3)} PROP CR / PROP</p><p className="mt-1 text-[9px] text-muted-foreground">{cartConfig[item.id]?.drop ?? 'Studio staging table'} · {cartConfig[item.id]?.kit ?? 'Standard prop wrap'}</p><div className="mt-2 flex items-center gap-3"><button onClick={() => setQty(item.id, cart[item.id] - 1)} aria-label={`Kurangi ${item.name}`} className="grid size-6 place-items-center border border-border text-muted-foreground"><Minus size={12}/></button><span className="font-mono text-xs">{cart[item.id]}</span><button onClick={() => setQty(item.id, cart[item.id] + 1)} aria-label={`Tambah ${item.name}`} className="grid size-6 place-items-center border border-border text-muted-foreground"><Plus size={12}/></button><button onClick={() => setQty(item.id, 0)} aria-label={`Hapus ${item.name}`} className="ml-auto text-muted-foreground hover:text-destructive"><Trash2 size={14}/></button></div></div></div>)}<label className="mt-6 flex flex-col gap-2 font-mono text-[9px] tracking-wider text-muted-foreground"><span className="flex items-center gap-2"><MapPin size={13}/> SIMULATED SCENE DROP-OFF</span><select value={dropoff} onChange={(event) => setDropoff(event.target.value)} className="h-10 border border-border bg-background px-3 text-[10px] text-foreground"><option>Studio marker / A-07</option><option>Soundstage prop desk / B-02</option><option>Tabletop scene marker / C-01</option></select><span className="font-sans text-[10px] leading-5 tracking-normal">Lokasi di atas hanya label fiksi untuk demonstrasi form, bukan alamat atau opsi pengiriman.</span></label></div><div className="border-t border-border p-5"><div className="flex justify-between font-mono text-xs"><span className="text-muted-foreground">DEMO TOTAL</span><span className="text-foreground">{total.toFixed(3)} PROP CR</span></div><button onClick={() => setReceipt(true)} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 bg-primary px-4 font-mono text-[10px] font-semibold tracking-wider text-primary-foreground transition hover:brightness-110"><PackageCheck size={15}/> SIMULATE CHECKOUT</button><p className="mt-3 text-center text-[10px] leading-4 text-muted-foreground">Tidak ada pembayaran atau pengiriman nyata.</p></div></> : <div className="grid flex-1 place-items-center px-8 text-center"><div><ShoppingCart className="mx-auto text-muted-foreground"/><p className="mt-4 text-sm text-foreground">Keranjang properti kosong</p><p className="mt-1 text-xs text-muted-foreground">Tambahkan properti display dari katalog untuk mencoba simulasi.</p></div></div>}</>}</section></div>}
 
     {manualOpen && <div className="fixed inset-0 z-[55] grid place-items-center bg-black/75 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setManualOpen(false) }}><section role="dialog" aria-modal="true" aria-labelledby="manual-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-border bg-card p-6 shadow-2xl"><div className="flex items-start justify-between gap-4"><div><p className="font-mono text-[9px] tracking-[.2em] text-primary">MURTHEHELP / FIELD NOTES</p><h2 id="manual-title" className="mt-2 text-xl text-foreground">Panduan / Cara Kerja</h2></div><button onClick={() => setManualOpen(false)} aria-label="Tutup panduan" className="grid size-9 place-items-center border border-border text-muted-foreground"><X size={16}/></button></div><div className="mt-5 flex flex-col gap-5 text-xs leading-5 text-muted-foreground"><p><strong className="text-foreground">Marketplace.</strong> Cari properti, pilih kategori, lalu gunakan tombol Add Prop untuk memasukkan item display ke keranjang.</p><p><strong className="text-foreground">Keranjang & checkout.</strong> Ubah jumlah, pilih marker set fiktif, lalu tekan Simulate Checkout untuk melihat struk contoh. Tidak ada transaksi atau pengiriman nyata.</p><p><strong className="text-foreground">Kode warna.</strong> Hijau menandai profil admin demo, merah kru lapangan fiksi, ungu arsip intel cerita, dan kuning scene reset. Warna hanya dekoratif, bukan izin sungguhan.</p><p><strong className="text-foreground">Command Center.</strong> Buka radar interaktif untuk melihat titik agregat sintetis per benua dan grafik data rekaan. Geser peta, zoom, atau pilih marker untuk melihat kartu detail anonim.</p><p className="border-l-2 border-primary/50 pl-3 text-[11px]">Semua produk, kode, angka, marker, dan transaksi adalah simulasi fiksi untuk karya portofolio yang terinspirasi dari serial <em>A Shop for Killers</em>.</p></div></section></div>}
-    <MobileLandscapePrompt />
   </main>
-}
-
-function subscribeToMobilePortrait(onChange: () => void) {
-  const query = window.matchMedia('(max-width: 767px) and (orientation: portrait)')
-  query.addEventListener('change', onChange)
-  return () => query.removeEventListener('change', onChange)
-}
-
-function getMobilePortraitSnapshot() {
-  return window.matchMedia('(max-width: 767px) and (orientation: portrait)').matches
-}
-
-function MobileLandscapePrompt() {
-  const isMobilePortrait = useSyncExternalStore(subscribeToMobilePortrait, getMobilePortraitSnapshot, () => false)
-  const [dismissed, setDismissed] = useState(false)
-
-  if (!isMobilePortrait || dismissed) return null
-
-  return <aside role="status" className="fixed inset-x-3 bottom-3 z-[80] mx-auto max-w-md border border-primary/40 bg-[#10120d]/95 p-2.5 shadow-xl backdrop-blur">
-    <div className="flex items-center gap-2">
-      <Smartphone size={15} className="shrink-0 -rotate-90 text-primary" aria-hidden="true" />
-      <div className="min-w-0">
-        <p className="font-mono text-[9px] tracking-wider text-primary">LANDSCAPE RECOMMENDED</p>
-        <p className="mt-0.5 text-[10px] leading-4 text-zinc-300">Putar HP mendatar; browser mungkin memerlukan izin.</p>
-      </div>
-    </div>
-    <div className="mt-2 flex gap-2">
-      <button onClick={() => { void tryMobileLandscape() }} className="min-h-9 flex-1 border border-primary/50 px-2 font-mono text-[8px] tracking-wider text-primary">COBA LANDSCAPE</button>
-      <button onClick={() => setDismissed(true)} className="min-h-9 flex-1 border border-white/15 px-2 font-mono text-[8px] tracking-wider text-zinc-300">LANJUT PORTRAIT</button>
-    </div>
-  </aside>
 }
