@@ -1,28 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Volume2, VolumeX } from 'lucide-react'
 
 const warningText = 'Warning. This is a fictional prop exchange. All profiles, metrics, and transactions are simulated. No real weapons or operations are involved.'
 
-export default function HologramWarning() {
+export default function HologramWarning({ autoPlayWarning = false }: { autoPlayWarning?: boolean }) {
   const [speaking, setSpeaking] = useState(false)
   const [supported, setSupported] = useState(true)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), [])
-
-  const toggleWarning = () => {
+  const startWarning = useCallback(() => {
     if (!('speechSynthesis' in window)) {
       setSupported(false)
       return
     }
 
-    if (speaking) {
-      window.speechSynthesis.cancel()
-      setSpeaking(false)
-      return
-    }
-
+    window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(warningText)
     utterance.lang = 'en-US'
     utterance.pitch = 0.48
@@ -30,17 +24,47 @@ export default function HologramWarning() {
     utterance.volume = 0.9
     const voices = window.speechSynthesis.getVoices()
     utterance.voice = voices.find((voice) => voice.lang.toLowerCase().startsWith('en-us')) ?? voices.find((voice) => voice.lang.toLowerCase().startsWith('en')) ?? null
-    utterance.onstart = () => setSpeaking(true)
-    utterance.onend = () => setSpeaking(false)
-    utterance.onerror = () => setSpeaking(false)
-    window.speechSynthesis.cancel()
+    utteranceRef.current = utterance
+    const finishSpeaking = () => {
+      if (utteranceRef.current !== utterance) return
+      utteranceRef.current = null
+      setSpeaking(false)
+    }
+    utterance.onstart = () => {
+      if (utteranceRef.current === utterance) setSpeaking(true)
+    }
+    utterance.onend = finishSpeaking
+    utterance.onerror = finishSpeaking
     setSpeaking(true)
     try {
       window.speechSynthesis.speak(utterance)
     } catch {
+      utteranceRef.current = null
       setSpeaking(false)
       setSupported(false)
     }
+  }, [])
+
+  useEffect(() => () => {
+    utteranceRef.current = null
+    window.speechSynthesis?.cancel()
+  }, [])
+
+  useEffect(() => {
+    if (!autoPlayWarning) return
+    const timer = window.setTimeout(startWarning, 0)
+    return () => window.clearTimeout(timer)
+  }, [autoPlayWarning, startWarning])
+
+  const toggleWarning = () => {
+    if (speaking) {
+      utteranceRef.current = null
+      window.speechSynthesis.cancel()
+      setSpeaking(false)
+      return
+    }
+
+    startWarning()
   }
 
   return <aside lang="en" className="hologram-warning relative mt-6 overflow-hidden border border-cyan-400/30 bg-[#071013] p-4 sm:p-5" aria-labelledby="hologram-warning-title">
