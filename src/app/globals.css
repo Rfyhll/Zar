@@ -242,19 +242,18 @@
   animation: radar-pulse 2.2s ease-in-out infinite;
 }
 @keyframes murthehelp-title-reveal {
-  0% { opacity: 0; transform: scale(.4); }
-  35% { opacity: 1; transform: scale(1.2); }
-  58% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.04); }
+  0% { opacity: 0; transform: scale(.82); }
+  35% { opacity: 1; transform: scale(1.04); }
+  58%, 100% { opacity: 1; transform: scale(1); }
 }
 .murthehelp-title-screen {
-  background: radial-gradient(ellipse at center, #3B0000 0%, #190000 54%, #0D0000 100%);
+  background: #990000;
 }
 .murthehelp-title {
-  animation: murthehelp-title-reveal 2.5s cubic-bezier(.2,.75,.25,1) both;
-  color: #EF4444;
-  text-shadow: 0 0 8px rgba(239,68,68,.88), 0 0 30px rgba(127,0,0,.9), 0 0 64px rgba(127,0,0,.56);
-  -webkit-text-stroke: 1px rgba(20,0,0,.8);
+  animation: murthehelp-title-reveal 700ms cubic-bezier(.2,.75,.25,1) both;
+  color: #0A0A0A;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
 @media (prefers-reduced-motion: reduce) {
   .radar-pulse { animation: none; }
