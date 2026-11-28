@@ -15,15 +15,15 @@ const photoSets = {
   blue: [photo('photo-1580974928064-f0aeef70895a'), photo('photo-1518770660439-4636190af475'), photo('photo-1526738549149-8e07eca6c147'), photo('photo-1516035069371-29a1b244cc32'), photo('photo-1519389950473-47ba0277781c')],
   green: [photo('photo-1518770660439-4636190af475'), photo('photo-1580974928064-f0aeef70895a'), photo('photo-1526738549149-8e07eca6c147'), photo('photo-1516035069371-29a1b244cc32'), photo('photo-1519389950473-47ba0277781c')],
 }
-const catalogGroups: { tone: Tone; names: string[]; category: string; icon: typeof Radio; spec: string }[] = [
+const catalogGroups: { tone: Tone; names: string[]; category: string; icon: typeof Radio; spec: string; imageSet?: string[] }[] = [
   { tone: 'red', category: 'STAGE COMBAT PROPS', icon: Shield, spec: 'INERT · DISPLAY ONLY', names: ['LONG-RANGE RIFLE SILHOUETTE', 'COMPACT PISTOL BODY PROP', 'FICTIONAL DEVICE DECOY', 'TRAINING BLADE REPLICA', 'TACTICAL PROP CASE'] },
   { tone: 'purple', category: 'SPY & SURVEILLANCE', icon: Fingerprint, spec: 'NONFUNCTIONAL SET PIECE', names: ['MICRO RECON MINIATURE', 'ENCRYPTED SIGNAL PROP', 'NIGHT VISION MONOCULAR SHELL', 'LONG-RANGE SCOPE PROP', 'FIELD RECORDER PROP'] },
   { tone: 'yellow', category: 'CLEANUP & FORENSICS', icon: PackageCheck, spec: 'EMPTY · THEATRICAL PROP', names: ['BIO-HAZARD CLEANUP KIT PROP', 'INDUSTRIAL SOLVENT CASE PROP', 'INCINERATOR TORCH DECOY', 'FORENSIC SCENE KIT PROP', 'SCENE RESET CASE'] },
   { tone: 'blue', category: 'SUPPLY & LOGISTICS', icon: Truck, spec: 'PROP · NO LIVE COMPONENTS', names: ['ARMORED TACTICAL CASE PROP', 'SATELLITE COMMS RELAY MODEL', 'FIELD SUPPLY CRATE', 'CINEMATIC RADIO SHELL', 'EMPTY EQUIPMENT DUFFEL'] },
   { tone: 'green', category: 'ADMIN EXCLUSIVE', icon: LockKeyhole, spec: 'FICTIONAL DISPLAY PIECE', names: ['MASTER OVERRIDE KEYCARD PROP', 'FICTIONAL EQUIPMENT SET MODEL', 'COMMAND CONSOLE KEY', 'ACCESS TOKEN DISPLAY', 'ADMIN ARCHIVE CASE'] },
-  { tone: 'red', category: 'INERT FIREARM-STYLE PROPS', icon: Shield, spec: 'NONFUNCTIONAL · NO LIVE PARTS', names: ['BOLT-ACTION SILHOUETTE PROP', 'BULLPUP BODY DISPLAY MODEL', 'COMPACT CARBINE SHELL', 'MARKSMAN RIFLE STAGE PROP', 'HEAVY RIFLE HERO MODEL', 'AIR-RIFLE STYLE DISPLAY SHELL', 'FOLDING-STOCK TRAINING PROP', 'CINEMATIC RIFLE MOCKUP', 'FIELD PISTOL DISPLAY SHELL', 'COMPACT SMG SILHOUETTE PROP'] },
-  { tone: 'yellow', category: 'EMPTY AMMUNITION DRESSING', icon: PackageCheck, spec: 'EMPTY · INERT SCENE DRESSING', names: ['EMPTY CASING DISPLAY SET', 'DUMMY CARTRIDGE COLLECTION', 'SHOTGUN-SHELL HERO PROP', 'PAINTED SCENE-ROUND SET', 'OVERSIZED CARTRIDGE DISPLAY', 'SPENT-CASING SCENE PACK', 'FOAM PROJECTILE SET', 'TRANSLUCENT ROUND DISPLAY', 'BLANK SHELL MOCKUP SET', 'FICTIONAL AMMO CRATE INSERT'] },
-  { tone: 'blue', category: 'INERT ATTACHMENT MOCKUPS', icon: Box, spec: 'FIXED · NONFUNCTIONAL MOCKUP', names: ['CARBON-LOOK CYLINDER PROP', 'FIXED-LENS SCOPE SHELL', 'DUMMY TRIGGER-GROUP DISPLAY', 'BARREL-SLEEVE STAGE PIECE', 'PRESSURE-GAUGE DECOY PANEL', 'BIPOD-SHAPED STAND PROP', 'RANGEFINDER SCREEN MOCKUP', 'O-RING REPAIR-KIT DISPLAY', 'RAIL-STYLE MOUNTING BLOCK', 'OPTIC MODULE DISPLAY SHELL'] },
+  { tone: 'red', category: 'INERT FIREARM-STYLE PROPS', icon: Shield, spec: 'NONFUNCTIONAL · NO LIVE PARTS', imageSet: ['/props/firearm-style-props.png'], names: ['BOLT-ACTION SILHOUETTE PROP', 'BULLPUP BODY DISPLAY MODEL', 'COMPACT CARBINE SHELL', 'MARKSMAN RIFLE STAGE PROP', 'HEAVY RIFLE HERO MODEL', 'AIR-RIFLE STYLE DISPLAY SHELL', 'FOLDING-STOCK TRAINING PROP', 'CINEMATIC RIFLE MOCKUP', 'FIELD PISTOL DISPLAY SHELL', 'COMPACT SMG SILHOUETTE PROP'] },
+  { tone: 'yellow', category: 'EMPTY AMMUNITION DRESSING', icon: PackageCheck, spec: 'EMPTY · INERT SCENE DRESSING', imageSet: ['/props/empty-ammunition-dressing.png'], names: ['EMPTY CASING DISPLAY SET', 'DUMMY CARTRIDGE COLLECTION', 'SHOTGUN-SHELL HERO PROP', 'PAINTED SCENE-ROUND SET', 'OVERSIZED CARTRIDGE DISPLAY', 'SPENT-CASING SCENE PACK', 'FOAM PROJECTILE SET', 'TRANSLUCENT ROUND DISPLAY', 'BLANK SHELL MOCKUP SET', 'FICTIONAL AMMO CRATE INSERT'] },
+  { tone: 'blue', category: 'INERT ATTACHMENT MOCKUPS', icon: Box, spec: 'FIXED · NONFUNCTIONAL MOCKUP', imageSet: ['/props/attachment-mockups.png'], names: ['CARBON-LOOK CYLINDER PROP', 'FIXED-LENS SCOPE SHELL', 'DUMMY TRIGGER-GROUP DISPLAY', 'BARREL-SLEEVE STAGE PIECE', 'PRESSURE-GAUGE DECOY PANEL', 'BIPOD-SHAPED STAND PROP', 'RANGEFINDER SCREEN MOCKUP', 'O-RING REPAIR-KIT DISPLAY', 'RAIL-STYLE MOUNTING BLOCK', 'OPTIC MODULE DISPLAY SHELL'] },
 ]
 let nextProductNumber = 0
 const products: Product[] = catalogGroups.flatMap((group, groupIndex) => group.names.map((name, itemIndex) => {
@@ -39,7 +39,7 @@ const products: Product[] = catalogGroups.flatMap((group, groupIndex) => group.n
     tone: group.tone,
     icon: group.icon,
     spec: group.spec,
-    image: photoSets[group.tone][itemIndex % photoSets[group.tone].length],
+    image: group.imageSet?.[itemIndex % group.imageSet.length] ?? photoSets[group.tone][itemIndex % photoSets[group.tone].length],
   }
 }))
 
