@@ -71,7 +71,7 @@ const tones: Record<Tone, { text: string; bg: string; border: string; dot: strin
 }
 
 export default function MurthehelpConsole() {
-  const [phase, setPhase] = useState<'loading' | 'title' | 'market' | 'admin'>('loading')
+  const [phase, setPhase] = useState<'loading' | 'intro' | 'title' | 'market' | 'admin'>('loading')
   const [access, setAccess] = useState(accessOptions[0])
   const [category, setCategory] = useState('ALL CODES')
   const [query, setQuery] = useState('')
@@ -95,7 +95,9 @@ export default function MurthehelpConsole() {
 
   useEffect(() => {
     if (phase !== 'loading') return
-    const timer = window.setTimeout(() => setPhase('title'), 750)
+    const timer = window.setTimeout(() => {
+      setPhase(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'title' : 'intro')
+    }, 750)
     return () => window.clearTimeout(timer)
   }, [phase])
 
@@ -105,8 +107,19 @@ export default function MurthehelpConsole() {
     return () => window.clearTimeout(timer)
   }, [phase])
 
-  if (phase === 'loading' || phase === 'title') return <main className="fixed inset-0 z-50 overflow-hidden bg-[#ed1c24] text-black">
-    {phase === 'loading' ? <div className="absolute inset-0 grid place-items-center" aria-label="Loading Murthehelp"><span className="size-2 animate-pulse rounded-full bg-black" /></div> : <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
+  if (phase === 'loading' || phase === 'intro' || phase === 'title') return <main className={`fixed inset-0 z-50 overflow-hidden ${phase === 'intro' ? 'bg-black' : 'bg-[#ed1c24]'} text-black`}>
+    {phase === 'loading' ? <div className="absolute inset-0 grid place-items-center" role="status" aria-label="Loading Murthehelp"><span className="size-2 animate-pulse rounded-full bg-black" /></div> : phase === 'intro' ? <video
+      className="absolute inset-0 size-full object-cover"
+      src="/intro.mp4"
+      autoPlay
+      muted
+      playsInline
+      preload="auto"
+      tabIndex={-1}
+      aria-hidden="true"
+      onEnded={() => setPhase('title')}
+      onError={() => setPhase('title')}
+    /> : <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
       <h1 className="murthehelp-title text-center font-mono text-[clamp(2rem,11vw,6rem)] font-black uppercase tracking-[.08em]">MURTHEHELP</h1>
     </div>}
   </main>
