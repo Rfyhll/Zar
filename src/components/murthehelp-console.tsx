@@ -139,13 +139,9 @@ export default function MurthehelpConsole() {
         onError={finishIntro}
       />
       {!introStarted ? <div className="absolute inset-0 grid place-items-center bg-black/35 px-6 text-center">
-        <div>
-          <p className="mb-5 font-mono text-[10px] tracking-[.3em] text-white/75">MURTHEHELP / INTRO</p>
-          <button type="button" onClick={startIntro} className="border border-white/70 bg-black/60 px-6 py-4 font-mono text-xs tracking-[.16em] text-white transition hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-            {introPlaybackBlocked ? 'COBA PUTAR DENGAN SUARA' : 'MULAI DENGAN SUARA'}
-          </button>
-          <p className="mt-4 font-mono text-[9px] tracking-wider text-white/70">Tekan untuk memulai video dan audionya</p>
-        </div>
+        <button type="button" onClick={startIntro} aria-label={introPlaybackBlocked ? 'Coba mulai lagi dengan audio' : 'Mulai intro dengan audio'} className="border border-white/70 bg-black/60 px-6 py-4 font-mono text-xs tracking-[.16em] text-white transition hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+          MULAI
+        </button>
       </div> : <button type="button" onClick={finishIntro} className="absolute bottom-5 right-5 border border-white/50 bg-black/60 px-4 py-2 font-mono text-[10px] tracking-wider text-white transition hover:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">LEWATI INTRO</button>}
     </> : <>
       <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
