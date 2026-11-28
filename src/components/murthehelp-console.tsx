@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Activity, ArrowDownRight, ArrowUpRight, Box, Check, ChevronDown, CircleHelp, Fingerprint, LockKeyhole, MapPin, Minus, PackageCheck, Plus, Radio, Search, Shield, ShoppingCart, Signal, Terminal, Trash2, Truck, X, Zap } from 'lucide-react'
 import AdminCommandCenter from '@/components/admin-command-center'
 import HologramWarning from '@/components/hologram-warning'
@@ -72,6 +72,9 @@ const tones: Record<Tone, { text: string; bg: string; border: string; dot: strin
 
 export default function MurthehelpConsole() {
   const [phase, setPhase] = useState<'loading' | 'intro' | 'title' | 'market' | 'admin'>('loading')
+  const [introStarted, setIntroStarted] = useState(false)
+  const [introPlaybackBlocked, setIntroPlaybackBlocked] = useState(false)
+  const introVideoRef = useRef<HTMLVideoElement>(null)
   const [access, setAccess] = useState(accessOptions[0])
   const [category, setCategory] = useState('ALL CODES')
   const [query, setQuery] = useState('')
@@ -93,10 +96,25 @@ export default function MurthehelpConsole() {
   const total = products.reduce((sum, item) => sum + item.price * (cart[item.id] ?? 0), 0)
   const setQty = (id: string, amount: number) => setCart((previous) => { const next = { ...previous }; if (amount <= 0) delete next[id]; else { const item = products.find((product) => product.id === id); next[id] = Math.min(amount, item?.stock ?? amount) } return next })
 
+  const finishIntro = () => setPhase('title')
+
+  const startIntro = () => {
+    const video = introVideoRef.current
+    if (!video) return
+    video.currentTime = 0
+    setIntroPlaybackBlocked(false)
+    setIntroStarted(true)
+    void video.play().catch(() => {
+      setIntroStarted(false)
+      setIntroPlaybackBlocked(true)
+    })
+  }
+
   useEffect(() => {
     if (phase !== 'loading') return
     const timer = window.setTimeout(() => {
-      setPhase(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'title' : 'intro')
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      setPhase(prefersReducedMotion ? 'title' : 'intro')
     }, 750)
     return () => window.clearTimeout(timer)
   }, [phase])
@@ -108,20 +126,32 @@ export default function MurthehelpConsole() {
   }, [phase])
 
   if (phase === 'loading' || phase === 'intro' || phase === 'title') return <main className={`fixed inset-0 z-50 overflow-hidden ${phase === 'intro' ? 'bg-black' : 'bg-[#ed1c24]'} text-black`}>
-    {phase === 'loading' ? <div className="absolute inset-0 grid place-items-center" role="status" aria-label="Loading Murthehelp"><span className="size-2 animate-pulse rounded-full bg-black" /></div> : phase === 'intro' ? <video
-      className="absolute inset-0 size-full object-cover"
-      src="/intro.mp4"
-      autoPlay
-      muted
-      playsInline
-      preload="auto"
-      tabIndex={-1}
-      aria-hidden="true"
-      onEnded={() => setPhase('title')}
-      onError={() => setPhase('title')}
-    /> : <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
-      <h1 className="murthehelp-title text-center font-mono text-[clamp(2rem,11vw,6rem)] font-black uppercase tracking-[.08em]">MURTHEHELP</h1>
-    </div>}
+    {phase === 'loading' ? <div className="absolute inset-0 grid place-items-center" role="status" aria-label="Loading Murthehelp"><span className="size-2 animate-pulse rounded-full bg-black" /></div> : phase === 'intro' ? <>
+      <video
+        ref={introVideoRef}
+        className="absolute inset-0 size-full object-cover"
+        src="/intro.mp4"
+        playsInline
+        preload="auto"
+        tabIndex={-1}
+        aria-hidden="true"
+        onEnded={finishIntro}
+        onError={finishIntro}
+      />
+      {!introStarted ? <div className="absolute inset-0 grid place-items-center bg-black/35 px-6 text-center">
+        <div>
+          <p className="mb-5 font-mono text-[10px] tracking-[.3em] text-white/75">MURTHEHELP / INTRO</p>
+          <button type="button" onClick={startIntro} className="border border-white/70 bg-black/60 px-6 py-4 font-mono text-xs tracking-[.16em] text-white transition hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+            {introPlaybackBlocked ? 'COBA PUTAR DENGAN SUARA' : 'MULAI DENGAN SUARA'}
+          </button>
+          <p className="mt-4 font-mono text-[9px] tracking-wider text-white/70">Tekan untuk memulai video dan audionya</p>
+        </div>
+      </div> : <button type="button" onClick={finishIntro} className="absolute bottom-5 right-5 border border-white/50 bg-black/60 px-4 py-2 font-mono text-[10px] tracking-wider text-white transition hover:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">LEWATI INTRO</button>}
+    </> : <>
+      <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
+        <h1 className="murthehelp-title text-center font-mono text-[clamp(2rem,11vw,6rem)] font-black uppercase tracking-[.08em]">MURTHEHELP</h1>
+      </div>
+    </>}
   </main>
 
   if (phase === 'admin') return <AdminCommandCenter onBack={() => setPhase('market')} />
@@ -133,7 +163,7 @@ export default function MurthehelpConsole() {
 
     <div className="mx-auto max-w-[1440px] px-4 pb-16 sm:px-7"><section className="relative mt-5 overflow-hidden border border-border bg-card px-6 py-8 sm:mt-7 sm:px-10 sm:py-10"><div className="pointer-events-none absolute inset-0 bg-[linear-gradient(105deg,transparent_10%,rgba(185,219,102,.045)_48%,transparent_78%)]"/><div className="pointer-events-none absolute -right-10 -top-20 size-72 rounded-full border border-border/70"/><div className="pointer-events-none absolute -right-2 -top-12 size-56 rounded-full border border-border/60"/><div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="flex items-center gap-2 font-mono text-[9px] tracking-[.25em] text-primary"><span className="size-1.5 bg-primary"/>INDEPENDENT FICTIONAL PROP EXCHANGE</div><h1 className="mt-5 max-w-2xl text-[clamp(2.5rem,6vw,4.6rem)] font-semibold leading-[.98] tracking-[-.06em] text-white">A world built<br className="hidden sm:block"/> for <span className="font-mono font-normal text-primary">fiction.</span></h1><p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">Explore the visual language of a covert-network thriller through inert set pieces, cinematic props, and a dashboard powered entirely by invented data.</p></div><div className="grid grid-cols-2 gap-px border border-border bg-border lg:min-w-[310px]"><div className="bg-card p-4"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">DISPLAY PROPS</p><p className="mt-2 font-mono text-2xl text-foreground">{products.length}<span className="ml-2 text-xs text-muted-foreground">items</span></p></div><div className="bg-card p-4"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">MODE</p><p className="mt-2 flex items-center gap-2 font-mono text-sm text-primary"><span className="size-1.5 rounded-full bg-primary"/>SIMULATED</p></div><div className="col-span-2 flex items-center justify-between bg-card px-4 py-3"><p className="font-mono text-[9px] tracking-wider text-muted-foreground">CLEARANCE PROFILE</p><span className={`border px-2 py-1 font-mono text-[8px] tracking-wider ${tones[access.tone].text} ${tones[access.tone].bg} ${tones[access.tone].border}`}>{access.code} / DEMO ONLY</span></div></div></div></section>
 
-      <HologramWarning />
+      <HologramWarning autoPlayWarning={introStarted} />
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" id="catalog"><div><p className="font-mono text-[9px] tracking-[.22em] text-muted-foreground">01 / PROP INVENTORY</p><h2 className="mt-2 text-xl font-medium tracking-tight text-foreground">Available set pieces <span className="font-mono text-sm text-muted-foreground">({visibleProducts.length.toString().padStart(2, '0')})</span></h2></div><label className="flex h-10 items-center gap-2 border border-border bg-card px-3 sm:w-64"><Search size={14} className="text-muted-foreground"/><span className="sr-only">Cari properti</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari properti..." className="w-full bg-transparent font-mono text-[10px] text-foreground outline-none placeholder:text-muted-foreground"/></label></div>
       <div className="mt-4 flex flex-wrap gap-2 pb-2" aria-label="Filter kode warna properti">{filters.map((filter) => <button key={filter.label} onClick={() => setCategory(filter.label)} aria-pressed={category === filter.label} className={`shrink-0 border px-3 py-2 font-mono text-[9px] tracking-[.12em] transition ${category === filter.label ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-muted-foreground hover:text-foreground'}`}>{filter.label}</button>)}</div>
