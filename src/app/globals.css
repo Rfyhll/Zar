@@ -242,18 +242,19 @@
   animation: radar-pulse 2.2s ease-in-out infinite;
 }
 @keyframes murthehelp-title-reveal {
-  0% { opacity: 0; transform: scale(.82); }
-  35% { opacity: 1; transform: scale(1.04); }
-  58%, 100% { opacity: 1; transform: scale(1); }
+  0% { opacity: 0; transform: scale(.18); }
+  28% { opacity: 1; transform: scale(1); }
+  55% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.08); }
 }
 .murthehelp-title-screen {
-  background: radial-gradient(ellipse at 50% 36%, #102025 0%, #06090a 48%, #020303 100%);
+  background: #ed1c24;
 }
 .murthehelp-title {
-  animation: murthehelp-title-reveal 700ms cubic-bezier(.2,.75,.25,1) both;
-  color: #d8ffff;
-  text-shadow: 0 0 16px rgba(67, 232, 245, .7), 0 0 48px rgba(67, 232, 245, .35);
-  -webkit-text-stroke: 1px rgba(125, 251, 255, .4);
+  animation: murthehelp-title-reveal 4.8s cubic-bezier(.2,.75,.25,1) both;
+  color: #050505;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
 }
 .hologram-warning {
   box-shadow: inset 0 0 35px rgba(34, 211, 238, .035), 0 0 26px rgba(34, 211, 238, .07);

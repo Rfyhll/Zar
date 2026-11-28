@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Activity, ArrowDownRight, ArrowUpRight, Box, Check, ChevronDown, CircleHelp, Fingerprint, LockKeyhole, MapPin, Minus, PackageCheck, Plus, Radio, Search, Shield, ShoppingCart, Signal, Terminal, Trash2, Truck, X, Zap } from 'lucide-react'
 import AdminCommandCenter from '@/components/admin-command-center'
 import HologramWarning from '@/components/hologram-warning'
@@ -71,9 +71,7 @@ const tones: Record<Tone, { text: string; bg: string; border: string; dot: strin
 }
 
 export default function MurthehelpConsole() {
-  const [phase, setPhase] = useState<'intro' | 'weapon' | 'dread' | 'title' | 'market' | 'admin'>('intro')
-  const [videoError, setVideoError] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [phase, setPhase] = useState<'loading' | 'title' | 'market' | 'admin'>('loading')
   const [access, setAccess] = useState(accessOptions[0])
   const [category, setCategory] = useState('ALL CODES')
   const [query, setQuery] = useState('')
@@ -95,45 +93,22 @@ export default function MurthehelpConsole() {
   const total = products.reduce((sum, item) => sum + item.price * (cart[item.id] ?? 0), 0)
   const setQty = (id: string, amount: number) => setCart((previous) => { const next = { ...previous }; if (amount <= 0) delete next[id]; else { const item = products.find((product) => product.id === id); next[id] = Math.min(amount, item?.stock ?? amount) } return next })
 
-  const finishIntro = () => {
-    videoRef.current?.pause()
-    setPhase('title')
-  }
-
-  const advanceIntroClip = () => {
-    if (phase === 'weapon') {
-      setVideoError(false)
-      setPhase('dread')
-    } else if (phase === 'dread') {
-      finishIntro()
-    }
-  }
-
-  const initialize = () => {
-    setVideoError(false)
-    setPhase('weapon')
-  }
-
   useEffect(() => {
-    if (phase !== 'weapon' && phase !== 'dread') return
-    const video = videoRef.current
-    if (!video) return
-    video.currentTime = 0
-    video.muted = phase === 'dread'
-    void video.play().catch(() => setVideoError(true))
+    if (phase !== 'loading') return
+    const timer = window.setTimeout(() => setPhase('title'), 750)
+    return () => window.clearTimeout(timer)
   }, [phase])
 
   useEffect(() => {
     if (phase !== 'title') return
-    const timer = window.setTimeout(() => setPhase('market'), 6000)
+    const timer = window.setTimeout(() => setPhase('market'), 5200)
     return () => window.clearTimeout(timer)
   }, [phase])
 
-  if (phase === 'intro' || phase === 'weapon' || phase === 'dread' || phase === 'title') return <main className="fixed inset-0 z-50 overflow-hidden bg-black text-white">
-    {(phase === 'weapon' || phase === 'dread') && <video key={phase} ref={videoRef} src={phase === 'weapon' ? '/intro.mp4' : '/dread-intro.mp4'} muted={phase === 'dread'} playsInline preload="auto" onTimeUpdate={(event) => { if (phase === 'dread' && event.currentTarget.currentTime >= 3) advanceIntroClip() }} onEnded={advanceIntroClip} onError={() => setVideoError(true)} className={`absolute inset-0 size-full object-cover transition-opacity duration-700 ${videoError ? 'opacity-0' : 'opacity-100'}`} aria-label={phase === 'weapon' ? 'Original fictional weapon-themed opening video' : 'Three-second silent Murthehelp title clip'} />}
-    {phase === 'title' && <div className="murthehelp-title-screen absolute inset-0 flex flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-6" aria-label="MURTHEHELP title transition"><img src="/skull-hologram.png" alt="Glowing holographic skull" className="hologram-skull-title size-20 object-contain sm:size-24"/><h1 className="murthehelp-title text-center font-mono text-[clamp(2.25rem,10vw,6.5rem)] font-black tracking-[.12em]">MURTHEHELP</h1><p className="font-mono text-[9px] tracking-[.22em] text-primary">SOUNDTRACK / YOUTUBE SHORT</p><div className="w-full max-w-[320px] overflow-hidden border border-primary/30 bg-black"><iframe title="Murthehelp soundtrack from YouTube" src="https://www.youtube-nocookie.com/embed/etjzXoMGXAw?autoplay=1&controls=1&loop=1&playlist=etjzXoMGXAw&playsinline=1&rel=0" className="aspect-video w-full" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/></div><a href="https://www.youtube.com/shorts/etjzXoMGXAw?si=_JRJ2_9MOa13sEWS" target="_blank" rel="noreferrer" className="font-mono text-[8px] tracking-wider text-muted-foreground underline underline-offset-4">OPEN ORIGINAL YOUTUBE SOURCE</a><button onClick={() => setPhase('market')} className="mt-1 border border-primary/50 px-5 py-2.5 font-mono text-[10px] tracking-[.16em] text-primary transition hover:bg-primary/10">ENTER MURTHEHELP</button></div>}
-    {phase === 'intro' && <div className="absolute inset-0 grid place-items-center px-6"><div className="w-full max-w-2xl text-center"><p className="mb-6 font-mono text-[10px] tracking-[.38em] text-primary">MURTHEHELP / VISUAL FICTION PROTOCOL</p><button onClick={initialize} className="border border-primary/60 bg-primary/5 px-6 py-5 font-mono text-xs tracking-[.14em] text-primary transition hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-10">INITIALIZE SYSTEM</button><p className="mt-5 text-[10px] text-zinc-600">Fictional prototype · all profiles and activity are simulated</p></div></div>}
-    {(phase === 'weapon' || phase === 'dread') && <><button onClick={finishIntro} className="absolute bottom-4 right-4 border border-white/40 bg-black/60 px-4 py-2 font-mono text-[10px] tracking-wider text-white hover:border-primary hover:text-primary">SKIP INTRO</button>{videoError && <div className="absolute inset-0 grid place-items-center bg-black/90 px-6 text-center"><div><p className="font-mono text-xs text-primary">INTRO MEDIA NOT FOUND</p><p className="mt-3 text-sm text-zinc-400">The opening video <code className="text-zinc-200">{phase === 'weapon' ? '/intro.mp4' : '/dread-intro.mp4'}</code> could not play.</p><button onClick={advanceIntroClip} className="mt-6 border border-primary/50 px-5 py-3 font-mono text-[10px] tracking-wider text-primary">CONTINUE</button></div></div>}</>}
+  if (phase === 'loading' || phase === 'title') return <main className="fixed inset-0 z-50 overflow-hidden bg-[#ed1c24] text-black">
+    {phase === 'loading' ? <div className="absolute inset-0 grid place-items-center" aria-label="Loading Murthehelp"><span className="size-2 animate-pulse rounded-full bg-black" /></div> : <div className="murthehelp-title-screen absolute inset-0 grid place-items-center overflow-hidden px-4" aria-label="MURTHEHELP title transition">
+      <h1 className="murthehelp-title text-center font-mono text-[clamp(2rem,11vw,6rem)] font-black uppercase tracking-[.08em]">MURTHEHELP</h1>
+    </div>}
   </main>
 
   if (phase === 'admin') return <AdminCommandCenter onBack={() => setPhase('market')} />
